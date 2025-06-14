@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"runtime"
 	"sort"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -14,6 +17,15 @@ import (
 type IPStat struct {
     IP    string
     Count int
+}
+
+func printMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("Memory Usage:\n")
+	fmt.Printf("\tTotalAlloc = %v MiB", m.TotalAlloc/1024/1024)
+	fmt.Printf("\tSys = %v MiB", m.Sys/1024/1024)
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
 }
 
 func main() {
@@ -26,25 +38,38 @@ func main() {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	reader := bufio.NewReader(file)
+	buffer := make([]byte, 4*1024)
 
 	statusCounts := make(map[int]int)
 	ipCounts := make(map[string]int)
 	lineCount := 0
 
-	for scanner.Scan() {
-		line := scanner.Text()
-		ip,status,err := ParseLine(line)
-		if err != nil{
-			continue
+	printMemUsage()
+
+	var leftover string
+	for {
+		n, err := reader.Read(buffer)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatal(err)
+		}
+		chunk := leftover + string(buffer[:n])
+		lines := strings.Split(chunk, "\n")
+		leftover = lines[len(lines)-1]
+
+		for _, line := range lines[:len(lines)-1]{
+			ip,status,err := ParseLine(line)
+			if err != nil{
+				continue
 		}
 		ipCounts[ip] += 1
 		statusCounts[status] += 1
 
 		lineCount++
-	}
-	if err := scanner.Err(); err != nil{
-		log.Fatal("Ошибка чтения файла:", err)
+		}
 	}
 
 	fmt.Printf("Всего строк: %d\n", lineCount)
@@ -78,4 +103,6 @@ func main() {
 	for i := 0; i < 5 && i < len(ipStats); i++ {
 		red("%s: %d запросов\n", ipStats[i].IP, ipStats[i].Count)
 	}
+
+	printMemUsage()
 }
