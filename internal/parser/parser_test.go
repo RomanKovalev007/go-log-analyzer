@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"testing"
@@ -41,10 +41,10 @@ func TestParceLine_Valid(t *testing.T) {
 
 	for _, tt := range tests{
 		t.Run(tt.name, func(t *testing.T) {
-			ip, status, err := ParseLine(tt.input)
+			log_info, err := ParseLine(tt.input)
 			require.NoError(t, err, "Ошибка парсинга валидной строки")
-			assert.Equal(t, tt.expectedIP, ip, "Неверный IP-адрес")
-			assert.Equal(t, tt.expectedStatus, status, "Неверный статус")
+			assert.Equal(t, tt.expectedIP, log_info.IP, "Неверный IP-адрес")
+			assert.Equal(t, tt.expectedStatus, log_info.Status, "Неверный статус")
 		})
 	}
 }
@@ -63,7 +63,7 @@ func TestParceLine_InValid(t *testing.T) {
 	}
 	for _,tt := range tests{
 		t.Run(tt.name, func(t *testing.T) {
-			_,_,err := ParseLine(tt.input)
+			_,err := ParseLine(tt.input)
 			assert.Error(t, err, "ожидалась ошибка для невалидного формата")
 		})
 	}
