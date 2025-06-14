@@ -4,10 +4,17 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/fatih/color"
 	"log"
 	"os"
+	"sort"
+
+	"github.com/fatih/color"
 )
+
+type IPStat struct {
+    IP    string
+    Count int
+}
 
 func main() {
 	filePath := flag.String("f", "logs/access.log", "Путь к лог-файлу")
@@ -22,14 +29,16 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	statusCounts := make(map[int]int)
+	ipCounts := make(map[string]int)
 	lineCount := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		_,status,err := ParseLine(line)
+		ip,status,err := ParseLine(line)
 		if err != nil{
 			continue
 		}
+		ipCounts[ip] += 1
 		statusCounts[status] += 1
 
 		lineCount++
@@ -43,7 +52,7 @@ func main() {
 	red := color.New(color.FgRed).PrintfFunc()
 	green := color.New(color.FgGreen).PrintfFunc()
 
-	fmt.Println("Статистика HTTP-статусов")
+	fmt.Println("Статистика HTTP-статусов:")
 	for status, count := range statusCounts{
 		if status >= 500 {
 			red("%d: %d (ошибка сервера)\n", status, count)
@@ -54,5 +63,19 @@ func main() {
 		} else{
 			green("%d: %d (успех)\n", status, count)
 		}
+	}
+
+	var ipStats []IPStat
+	for ip, count := range ipCounts{
+		ipStats = append(ipStats, IPStat{ip, count})
+	}
+
+	sort.Slice(ipStats, func(i, j int) bool {
+		return ipStats[i].Count > ipStats[j].Count
+	})
+
+	fmt.Println("Top 5 IPs:")
+	for i := 0; i < 5 && i < len(ipStats); i++ {
+		red("%s: %d запросов\n", ipStats[i].IP, ipStats[i].Count)
 	}
 }
