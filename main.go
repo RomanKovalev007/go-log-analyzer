@@ -21,6 +21,21 @@ func printMemUsage() {
 	fmt.Printf("\tNumGC = %v\n", m.NumGC)
 }
 
+func LogFile(
+	reader *reader.Buffer,
+	aggregator aggregator.Aggregator,
+	filePath *string) error{
+		err := reader.ReadFile(filePath, func(s string) error {
+		loginfo, err := parser.ParseLine(s)
+		if err != nil{
+			return err
+		}
+		aggregator.Add(loginfo)
+		return nil
+	})
+	return err
+}
+
 func main() {
 	filePath := flag.String("f", "logs/access.log", "Путь к лог-файлу")
 	flag.Parse() 
@@ -31,19 +46,9 @@ func main() {
 	
 	
 	printMemUsage()
-	err := reader.ReadFile(filePath, func(s string) error {
-		loginfo, err := parser.ParseLine(s)
-		if err != nil{
-			return err
-		}
-		aggregator.Add(loginfo)
-		return nil
-	})
-
-	if err != nil {
+	if err := LogFile(reader, *aggregator, filePath); err != nil{
 		log.Fatalf("File reading error: %v", err)
 	}
-
 
 	printer.PrintResult(aggregator.Results())
 	printMemUsage()
