@@ -13,7 +13,8 @@ go build -o logs/analyzer ./cmd/analyzer
 ./analyzer -f access.log -n 10
 ```
 ## Используемые флаги
--f путь к лог-файлу (по умолчанию: logs/access.log)\n
+-f путь к лог-файлу (по умолчанию: logs/access.log)
+
 -n количество топN IP (по умолчанию: 5)
 
 
