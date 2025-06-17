@@ -38,14 +38,14 @@ func LogFile(
 
 func main() {
 	filePath := flag.String("f", "logs/access.log", "Путь к лог-файлу")
+	topN := flag.Int("n", 5, "Number of top IPs to display")
 	flag.Parse() 
 
 	reader := reader.NewReader(4*1024)
 	aggregator := aggregator.NewAggregator()
-	printer := printer.NewPrinter(5)
+	printer := printer.NewPrinter(*topN)
 	
-	
-	printMemUsage()
+
 	if err := LogFile(reader, *aggregator, filePath); err != nil{
 		log.Fatalf("File reading error: %v", err)
 	}

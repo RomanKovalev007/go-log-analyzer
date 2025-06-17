@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 )
 
 
@@ -15,6 +16,12 @@ func NewReader(size int) *Buffer{
 	return &Buffer{size: size}
 }
 
+var bufPool = sync.Pool{
+    New: func() interface{} {
+        return make([]byte, 4*1024) // 4KB буфер
+    },
+}
+
 func (buf *Buffer) ReadFile(filePath *string, processor func(string) error) error{
 	file, err := os.Open(*filePath)
 	if err != nil {
@@ -22,10 +29,13 @@ func (buf *Buffer) ReadFile(filePath *string, processor func(string) error) erro
 	}
 	defer file.Close()
 
+	buffer := bufPool.Get().([]byte)
+	defer bufPool.Put(buf)
+
 	reader := bufio.NewReaderSize(file, buf.size)
 	var leftover string
 	for {
-		buffer := make([]byte, buf.size)
+		
 		n, err := reader.Read(buffer)
 		
 		if err != nil {
