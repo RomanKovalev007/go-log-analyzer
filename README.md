@@ -18,14 +18,16 @@ go build -o logs/analyzer ./cmd/analyzer
 
 
 ## Пример вывода
-HTTP Status Statistics:\n
-404: 2 (client error)\n
-200: 3 (success)\n
-503: 1 (server error)\n
-302: 1 (redirect)\n
+```bash
+HTTP Status Statistics:
+404: 2 (client error)
+200: 3 (success)
+503: 1 (server error)
+302: 1 (redirect)
 
 Top 10 IPs:\n
-127.0.0.1: 4 requests\n
-192.168.1.1: 2 requests\n
-2001:db8::1: 1 requests\n
+127.0.0.1: 4 requests
+192.168.1.1: 2 requests
+2001:db8::1: 1 requests
 Memory Usage: Alloc = 0.18 MB   TotalAlloc = 0 MiB      Sys = 6 MiB     NumGC = 0
+```
