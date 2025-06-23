@@ -41,7 +41,7 @@ jobs:
         run: make build
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: log-analyzer
           path: bin/log-analyzer
